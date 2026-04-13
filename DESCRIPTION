@@ -1,0 +1,20 @@
+Type: Shiny
+Title: Efficacy Estimator Dashboard
+Description: Browser-based front-end for fitting Bayesian waning vaccine
+    efficacy models to aggregated randomised trial data.
+Version: 0.2.0
+Author: David Hodgson
+Imports:
+    shiny (>= 1.8.0),
+    bslib (>= 0.7.0),
+    DT (>= 0.31),
+    shinyjs,
+    ggplot2,
+    rstan (>= 2.21.0),
+    posterior,
+    tidybayes,
+    readr,
+    tibble,
+    dplyr,
+    tidyr,
+    purrr
