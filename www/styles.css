@@ -18,6 +18,7 @@ body {
   background-color: #33302E !important;
   border-bottom: 3px solid #0D7680;
   padding: 0.55rem 1.2rem;
+  position: relative;
 }
 
 /* ── Sidebar ─────────────────────────────────────────────────────────────── */
@@ -301,42 +302,28 @@ table.dataTable.stripe tbody tr.odd {
 /* ── Navbar brand — bigger heading + sub-links ───────────────────────────── */
 .navbar-brand {
   color: #FFFFFF !important;
-  font-weight: 700;
-  font-size: 1.15rem;
-  letter-spacing: -0.025em;
-  line-height: 1.1;
-  display: flex !important;
-  flex-direction: column;
-  justify-content: center;
-}
-
-.brand-wrap {
-  display: flex;
-  flex-direction: column;
-  line-height: 1.1;
-}
-
-.brand-main {
-  font-size: 1.45rem;
   font-weight: 800;
-  letter-spacing: -0.035em;
-  color: #FFFFFF;
+  font-size: 1.35rem;
+  letter-spacing: -0.03em;
+  line-height: 1.1;
 }
 
-.brand-links {
-  font-size: 0.7rem;
-  font-weight: 400;
-  opacity: 0.65;
-  margin-top: 1px;
-  letter-spacing: 0;
+/* Links bar rendered as a sibling div, floated right inside navbar */
+.brand-links-bar {
+  position: absolute;
+  right: 1.4rem;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 0.72rem;
+  opacity: 0.7;
 }
 
-.brand-links a {
+.brand-links-bar a {
   color: #FF8833 !important;
   text-decoration: none;
 }
 
-.brand-links a:hover {
+.brand-links-bar a:hover {
   text-decoration: underline;
   opacity: 1;
 }
