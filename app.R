@@ -3,9 +3,6 @@ library(bslib)
 library(ggplot2)
 library(DT)
 library(shinyjs)
-library(rstan)
-rstan::rstan_options(auto_write = TRUE)
-options(mc.cores = 1L)
 
 # ── Theme ──────────────────────────────────────────────────────────────────────
 ft_theme <- bs_theme(

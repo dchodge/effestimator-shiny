@@ -35,10 +35,12 @@ jobs:
 
       - name: Install R packages
         run: |
+          options(repos = c(CRAN = "https://packagemanager.posit.co/cran/__linux__/jammy/latest"))
           install.packages(c(
+            "StanHeaders", "RcppParallel", "RcppEigen", "inline", "loo",
+            "rstan",
             "shiny", "bslib", "DT", "shinyjs",
             "ggplot2", "patchwork",
-            "rstan",
             "posterior", "tidybayes",
             "readr", "tibble", "dplyr", "tidyr", "purrr",
             "rsconnect"

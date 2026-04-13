@@ -91,7 +91,13 @@ fit_efficacy <- function(
   if (!dir.exists(output_dir)) dir.create(output_dir, recursive = TRUE)
 
   # ── Stan model ──────────────────────────────────────────────────────────────
-  stan_dir  <- file.path(getwd(), "stan")
+  # Suppress rstan output; auto-write compiled binary to avoid recompiling
+  rstan::rstan_options(auto_write = TRUE)
+  options(mc.cores = 1L)
+
+  stan_dir <- file.path(getwd(), "stan")
+  if (!dir.exists(stan_dir)) stan_dir <- file.path(normalizePath("."), "stan")
+
   stan_file <- if (bounded) {
     file.path(stan_dir, "eff_est.stan")
   } else {
