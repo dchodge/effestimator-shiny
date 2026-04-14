@@ -303,9 +303,9 @@ table.dataTable.stripe tbody tr.odd {
 .navbar-brand {
   color: #FFFFFF !important;
   font-weight: 800;
-  font-size: 1.35rem;
-  letter-spacing: -0.03em;
-  line-height: 1.1;
+  font-size: 1.75rem;
+  letter-spacing: -0.04em;
+  line-height: 1.0;
 }
 
 /* Links bar rendered as a sibling div, floated right inside navbar */
@@ -326,6 +326,44 @@ table.dataTable.stripe tbody tr.odd {
 .brand-links-bar a:hover {
   text-decoration: underline;
   opacity: 1;
+}
+
+/* ── Intro strip ─────────────────────────────────────────────────────────── */
+.app-intro-bar {
+  background: linear-gradient(to right, #FAF6EF, #F2EDE8);
+  border-bottom: 1px solid #E2DDD7;
+  padding: 10px 20px;
+  font-size: 0.855rem;
+  color: #4A4038;
+  line-height: 1.6;
+  flex-shrink: 0;
+}
+
+.app-intro-title {
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: #0D7680;
+  letter-spacing: -0.025em;
+  margin-right: 6px;
+}
+
+.app-intro-sep {
+  color: #C8C0B5;
+  margin-right: 6px;
+}
+
+.app-intro-ref {
+  color: #9E9B93;
+  font-size: 0.8rem;
+}
+
+.app-intro-ref a {
+  color: #0D7680;
+  text-decoration: none;
+}
+
+.app-intro-ref a:hover {
+  text-decoration: underline;
 }
 
 /* ── Dataset paper citation chip ─────────────────────────────────────────── */

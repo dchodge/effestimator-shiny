@@ -135,15 +135,36 @@ ui <- page_sidebar(
       href = "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
     )
   ),
-  # Navbar links injected via CSS-positioned absolute div
+  # Navbar links (absolutely positioned into navbar via CSS)
   tags$div(
     class = "brand-links-bar",
     tags$a("R package", href = "https://github.com/dchodge/effestimator",
            target = "_blank", rel = "noopener"),
-    " · ",
-    tags$a("Hodgson et al. Lancet",
+    " \u00b7 ",
+    tags$a("Hodgson et al. 2024, Lancet Europe",
            href = "https://www.thelancet.com/journals/lanepe/article/PIIS2666-7762(23)00248-X/fulltext",
            target = "_blank", rel = "noopener")
+  ),
+
+  # ── Intro strip (below navbar, above sidebar layout) ──────────────────────
+  tags$div(
+    class = "app-intro-bar",
+    tags$span(class = "app-intro-title", "Waning Efficacy Estimator"),
+    tags$span(class = "app-intro-sep", "\u2014"),
+    "Translate randomised trial results into waning protection curves ",
+    "ready for use in compartment epidemic models. ",
+    "Fit exponential or Erlang-k waning models via Bayesian HMC (Stan) ",
+    "to interval-format event data.",
+    tags$span(
+      class = "app-intro-ref",
+      " Methods: ",
+      tags$a(
+        "Hodgson et al. 2024, Lancet Regional Health \u2014 Europe",
+        href = "https://www.thelancet.com/journals/lanepe/article/PIIS2666-7762(23)00248-X/fulltext",
+        target = "_blank", rel = "noopener"
+      ),
+      "."
+    )
   ),
 
   # ── Sidebar ─────────────────────────────────────────────────────────────────
@@ -392,10 +413,11 @@ ui <- page_sidebar(
             ),
             tags$div(
               class = "ref-block",
-              tags$strong("Hodgson et al. (2023)"),
-              " Optimising RSV prophylaxis for infants in England: a health economics modelling study. ",
-              tags$em("Lancet Regional Health \u2014 Europe."),
-              " ",
+              tags$strong("Hodgson D, Wilkins N, van Leeuwen E et al. (2024)"),
+              " Protecting infants against RSV disease: an impact and cost-effectiveness ",
+              "comparison of long-acting monoclonal antibodies and maternal vaccination. ",
+              tags$em("The Lancet Regional Health \u2014 Europe"),
+              ", 38. ",
               tags$a("doi:10.1016/S2666-7762(23)00248-X",
                      href = "https://www.thelancet.com/journals/lanepe/article/PIIS2666-7762(23)00248-X/fulltext",
                      target = "_blank", rel = "noopener", class = "ref-link")
