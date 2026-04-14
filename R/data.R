@@ -283,16 +283,13 @@
 #' dat <- rsv_example("maternal")
 #' head(dat$vaccine)
 rsv_example <- function(dataset = c("nirsevimab", "maternal",
-                                    "oa_gsk", "oa_pfizer",
-                                    "oa_moderna", "oa_papirovax")) {
+                                    "oa_gsk", "oa_pfizer")) {
   dataset <- match.arg(dataset)
   switch(dataset,
     nirsevimab  = .nmab_data(),
     maternal    = .maternal_data(),
     oa_gsk      = .oa_gsk_data(),
-    oa_pfizer   = .oa_pfizer_data(),
-    oa_moderna  = .oa_moderna_data(),
-    oa_papirovax = .oa_papirovax_data()
+    oa_pfizer   = .oa_pfizer_data()
   )
 }
 

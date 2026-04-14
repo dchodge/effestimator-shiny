@@ -27,9 +27,7 @@ DATASETS <- c(
   "Nirsevimab (MELODY / MEDLEY)"            = "nirsevimab",
   "Maternal vaccine — Pfizer MATISSE"       = "maternal",
   "Older adult — GSK Arexvy (multi-season)" = "oa_gsk",
-  "Older adult — Pfizer Abrysvo"            = "oa_pfizer",
-  "Older adult — Moderna mRESVIA"           = "oa_moderna",
-  "Older adult — Papirovax (Papi et al.)"   = "oa_papirovax"
+  "Older adult — Pfizer Abrysvo"            = "oa_pfizer"
 )
 
 # ── Per-dataset paper references ─────────────────────────────────────────────
@@ -48,15 +46,7 @@ DATASET_REFS <- list(
   ),
   oa_pfizer = list(
     cite = "Walsh et al. (2023) \u2013 NEJM",
-    url  = "https://www.nejm.org/doi/10.1056/NEJMoa2304891"
-  ),
-  oa_moderna = list(
-    cite = "Wilson et al. (2023) \u2013 NEJM",
-    url  = "https://www.nejm.org/doi/10.1056/NEJMoa2309079"
-  ),
-  oa_papirovax = list(
-    cite = "Papi et al. (2023) \u2013 NEJM",
-    url  = "https://www.nejm.org/doi/10.1056/NEJMoa2209604"
+    url  = "https://www.nejm.org/doi/10.1056/NEJMoa2213836"
   )
 )
 
@@ -404,6 +394,105 @@ ui <- page_sidebar(
           )
         ),
 
+        card(
+          card_header("Model parameters: initial efficacy and waning rate"),
+          card_body(
+            tags$p(class = "about-intro",
+              "Each waning model has two key structural parameters estimated by the Bayesian sampler. ",
+              "Understanding these helps interpret the waning curves produced by the app."
+            ),
+
+            tags$h6("Parameter a \u2014 initial efficacy (responder fraction)", class = "about-section-h"),
+            tags$p(class = "about-intro",
+              tags$strong("a"), " is the fraction of vaccinees who are immunologically protected ",
+              "immediately after vaccination / administration (at t\u00a0=\u00a00). Equivalently, ",
+              tags$strong("1\u2009\u2212\u2009a"), " is the non-responder fraction \u2014 individuals who receive ",
+              "the product but are not protected against the endpoint. ",
+              "It appears directly as the y-intercept of the fitted waning curve."
+            ),
+            tags$div(
+              class = "model-how",
+              HTML("<code>eff(0) = a &nbsp;&nbsp; (y-intercept of the fitted waning curve)</code>")
+            ),
+
+            tags$h6("Parameter \u03b2 \u2014 waning rate", class = "about-section-h mt-3"),
+            tags$p(class = "about-intro",
+              tags$strong("\u03b2"), " (wane_b in the Stan model) is the per-day rate at which protection ",
+              "drains through each immunological compartment. For the ",
+              tags$strong("exponential model"), ", \u03b2 is the instantaneous hazard of waning, ",
+              "and the protection half-life is:"
+            ),
+            tags$div(
+              class = "model-how",
+              HTML("<code>t&#189; = ln(2) / \u03b2 &nbsp;&nbsp; (days until efficacy falls to a/2, exponential only)</code>")
+            ),
+            tags$p(class = "about-intro mt-2",
+              "For ", tags$strong("Erlang-k"), " models the same \u03b2 governs the transition between ",
+              "k sequential compartments (compartment drain rate = k\u03b2). ",
+              "Because an individual must pass through all k stages before losing protection, ",
+              "the effective time to half-protection is ", tags$em("longer"), " than ln(2)/\u03b2, ",
+              "giving the characteristic plateau-then-fall shape seen in the compartment diagrams above."
+            ),
+
+            tags$h6("Approximate values for the built-in datasets", class = "about-section-h mt-3"),
+            tags$p(class = "about-intro",
+              "Trial-reported primary-endpoint VEs as a guide to a, together with approximate ",
+              "exponential half-lives estimated from the published waning data. ",
+              "Fitting the Stan models gives the full posterior distribution of both parameters."
+            ),
+            tags$table(
+              class = "ref-table mb-2",
+              tags$thead(tags$tr(
+                tags$th("Product"),
+                tags$th("Trial VE (\u2248\u2009a)"),
+                tags$th("Approx. exp. half-life"),
+                tags$th("Source")
+              )),
+              tags$tbody(
+                tags$tr(
+                  tags$td("Nirsevimab (MELODY\u2009/\u2009MEDLEY)"),
+                  tags$td("~75%"),
+                  tags$td("~150 days"),
+                  tags$td(tags$a("Hammitt et al. 2022",
+                    href = "https://www.sciencedirect.com/science/article/pii/S2352464222003212",
+                    target = "_blank", class = "ref-link"))
+                ),
+                tags$tr(
+                  tags$td("Maternal vaccine \u2014 Pfizer MATISSE"),
+                  tags$td("~57%"),
+                  tags$td("~90\u2013150 days"),
+                  tags$td(tags$a("Kampmann et al. 2023",
+                    href = "https://www.nejm.org/doi/10.1056/NEJMoa2216480",
+                    target = "_blank", class = "ref-link"))
+                ),
+                tags$tr(
+                  tags$td("OA GSK Arexvy (multi-season)"),
+                  tags$td("~83%"),
+                  tags$td(">12 months"),
+                  tags$td(tags$a("Papi et al. 2023",
+                    href = "https://www.nejm.org/doi/10.1056/NEJMoa2209604",
+                    target = "_blank", class = "ref-link"))
+                ),
+                tags$tr(
+                  tags$td("OA Pfizer Abrysvo"),
+                  tags$td("~67%"),
+                  tags$td("~9\u201312 months"),
+                  tags$td(tags$a("Walsh et al. 2023",
+                    href = "https://www.nejm.org/doi/10.1056/NEJMoa2213836",
+                    target = "_blank", class = "ref-link"))
+                )
+              )
+            ),
+            tags$p(class = "about-intro",
+              tags$em(
+                "Half-life estimates are approximate and based on exponential fits to published ",
+                "waning data; Erlang-k models yield longer effective half-lives for the same \u03b2. ",
+                "Click \u2018Fit Models\u2019 to obtain full posterior distributions."
+              )
+            )
+          )
+        ),
+
         card(          card_header("Fitting pipeline — how it works"),
           card_body(
             tags$p(class = "about-intro",
@@ -525,7 +614,7 @@ ui <- page_sidebar(
             ),
             tags$div(
               class = "about-method-block",
-              tags$strong("Most datasets (Maternal, OA-GSK, OA-Pfizer, OA-Moderna, Papirovax)"),
+              tags$strong("Most datasets (Maternal, OA-GSK, OA-Pfizer)"),
               tags$p(class = "about-intro mt-1",
                 "At-risk counts (N\u1d62) and cumulative event counts were read from the ",
                 "published tables or digitised from the KM figure. ",
@@ -609,19 +698,7 @@ ui <- page_sidebar(
                 tags$tr(
                   tags$td("OA Pfizer Abrysvo"),
                   tags$td(tags$a("Walsh et al. 2023, NEJM",
-                    href = "https://www.nejm.org/doi/10.1056/NEJMoa2304891",
-                    target = "_blank", class = "ref-link"))
-                ),
-                tags$tr(
-                  tags$td("OA Moderna mRESVIA"),
-                  tags$td(tags$a("Wilson et al. 2023, NEJM",
-                    href = "https://www.nejm.org/doi/10.1056/NEJMoa2309079",
-                    target = "_blank", class = "ref-link"))
-                ),
-                tags$tr(
-                  tags$td("OA Papirovax"),
-                  tags$td(tags$a("Papi et al. 2023, NEJM",
-                    href = "https://www.nejm.org/doi/10.1056/NEJMoa2209604",
+                    href = "https://www.nejm.org/doi/10.1056/NEJMoa2213836",
                     target = "_blank", class = "ref-link"))
                 )
               )
