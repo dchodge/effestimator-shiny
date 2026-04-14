@@ -72,7 +72,7 @@ instance, then the compiled library is cached for the session.
 |-------------|-------------|---------------|
 | `nirsevimab` | Nirsevimab (infant monoclonal antibody) | MELODY + MEDLEY pooled — Hammitt et al. 2022 |
 | `maternal` | Maternal RSV vaccine — Pfizer MATISSE | Kampmann et al. 2023, *NEJM* |
-| `oa_gsk` | Older-adult RSV vaccine — GSK Arexvy (multi-season) | Papi et al. 2023, *NEJM* |
+| `oa_gsk` | Older-adult RSV vaccine — GSK Arexvy | Papi et al. 2023, *NEJM* |
 | `oa_pfizer` | Older-adult RSV vaccine — Pfizer Abrysvo | Walsh et al. 2023, *NEJM* |
 | `oa_moderna` | Older-adult RSV vaccine — Moderna mRESVIA | Wilson et al. 2023, *NEJM* |
 | `oa_papirovax` | Older-adult RSV subunit vaccine candidate | Papi et al. 2023, *NEJM* |
@@ -170,7 +170,7 @@ shiny::runApp()
 |-------------|-------------|---------------|
 | `nirsevimab` | Nirsevimab (infant monoclonal antibody) | MELODY + MEDLEY pooled — Hammitt et al. 2022 |
 | `maternal` | Maternal RSV vaccine — Pfizer MATISSE | Kampmann et al. 2023, *NEJM* |
-| `oa_gsk` | Older-adult RSV vaccine — GSK Arexvy (multi-season) | Papi et al. 2023, *NEJM* |
+| `oa_gsk` | Older-adult RSV vaccine — GSK Arexvy | Papi et al. 2023, *NEJM* |
 | `oa_pfizer` | Older-adult RSV vaccine — Pfizer Abrysvo | Walsh et al. 2023, *NEJM* |
 | `oa_moderna` | Older-adult RSV vaccine — Moderna mRESVIA | Moderna Phase 3 trial |
 | `oa_papirovax` | Older-adult RSV subunit vaccine candidate | — |

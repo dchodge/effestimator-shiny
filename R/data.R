@@ -237,7 +237,7 @@
 }
 
 .nmab_data <- function() {
-  ts       <- seq(0, 151, 1)
+  ts       <- seq(0, 154, 7)   # 7-day bins (~22 intervals) for faster fitting
   pla_data <- .km_est(.nmab_events_pla())
   vac_data <- .km_est(.nmab_events_vac())
   list(
@@ -261,7 +261,7 @@
 #'     \item{\code{"maternal"}}{Maternal RSV vaccination (Pfizer MATISSE trial).
 #'       Kampmann et al. 2023, NEJM.}
 #'     \item{\code{"oa_gsk"}}{Older-adult RSV vaccine (GSK Arexvy,
-#'       multi-season). Papi et al. 2023, NEJM.}
+#'       Papi et al. 2023, NEJM.}
 #'     \item{\code{"oa_pfizer"}}{Older-adult RSV vaccine (Pfizer Abrysvo).
 #'       Walsh et al. 2023, NEJM.}
 #'     \item{\code{"oa_moderna"}}{Older-adult RSV vaccine (Moderna mRESVIA).

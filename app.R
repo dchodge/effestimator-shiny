@@ -26,7 +26,7 @@ ft_theme <- bs_theme(
 DATASETS <- c(
   "Nirsevimab (MELODY / MEDLEY)"            = "nirsevimab",
   "Maternal vaccine — Pfizer MATISSE"       = "maternal",
-  "Older adult — GSK Arexvy (multi-season)" = "oa_gsk",
+  "Older adult — GSK Arexvy" = "oa_gsk",
   "Older adult — Pfizer Abrysvo"            = "oa_pfizer"
 )
 
@@ -476,7 +476,7 @@ ui <- page_sidebar(
                     target = "_blank", class = "ref-link"))
                 ),
                 tags$tr(
-                  tags$td("OA GSK Arexvy (multi-season)"),
+                  tags$td("OA GSK Arexvy"),
                   tags$td("~83%"),
                   tags$td(">12 months"),
                   tags$td(tags$a("Papi et al. 2023",
