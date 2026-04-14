@@ -134,9 +134,17 @@ fit_efficacy <- function(
   upper_bound_b <- rep_len(upper_bound_b, length(models))
   names(upper_bound_b) <- models
 
-  # shinyapps.io (and most Shiny servers) block forked parallel processes.
-  # Force single-core regardless of user setting.
-  n_cores <- 1L
+  # shinyapps.io blocks both forked (mclapply) and socket (PSOCK) parallel
+  # processes, which causes rstan "invalid connection" errors even with cores=1
+  # because rstan still sets up connection infrastructure for multi-chain runs.
+  # Forcing chains=1 removes ALL parallel machinery; cores=1 is belt-and-braces.
+  is_shiny <- tryCatch(shiny::isRunning(), error = function(e) FALSE)
+  if (is_shiny) {
+    chains  <- 1L
+    n_cores <- 1L
+  } else {
+    n_cores <- 1L
+  }
 
   # ── Fit each model ──────────────────────────────────────────────────────────
   fits <- list()
@@ -151,13 +159,14 @@ fit_efficacy <- function(
 
     fit <- rstan::sampling(
       mod,
-      data    = stan_data,
-      seed    = seed,
-      chains  = chains,
-      cores   = n_cores,
-      warmup  = iter_warmup,
-      iter    = iter_warmup + iter_sampling,
-      refresh = refresh
+      data          = stan_data,
+      seed          = seed,
+      chains        = chains,
+      cores         = n_cores,
+      warmup        = iter_warmup,
+      iter          = iter_warmup + iter_sampling,
+      refresh       = refresh,
+      open_progress = FALSE   # suppress rstan's progress connection on servers
     )
 
     save_path <- file.path(output_dir, sprintf("fits_%s.rds", m))

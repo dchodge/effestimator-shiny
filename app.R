@@ -246,7 +246,7 @@ ui <- page_sidebar(
           numericInput("upper_bound_b", "Upper bound for wane_b",
                        value = 0.05, min = 0.001, max = 1, step = 0.01)
         ),
-        numericInput("chains",  "Chains",          value = 2,    min = 1, max = 8),
+        numericInput("chains",  "Chains (forced to 1 on server)",  value = 1,    min = 1, max = 8),
         numericInput("iter_w",  "Warmup / chain",  value = 500,  min = 100, step = 100),
         numericInput("iter_s",  "Samples / chain", value = 500,  min = 100, step = 100),
         numericInput("seed",    "Random seed",     value = 123,  min = 1)
