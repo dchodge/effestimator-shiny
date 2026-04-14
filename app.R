@@ -286,8 +286,13 @@ ui <- page_sidebar(
         card_header(
           class = "d-flex justify-content-between align-items-center",
           "Waning vaccine efficacy",
-          downloadButton("dl_waning", label = NULL, icon = icon("download"),
-                         class = "btn-sm btn-outline-secondary dl-btn ms-auto")
+          tags$div(
+            class = "d-flex gap-2 ms-auto",
+            downloadButton("dl_curves_csv", "Curves CSV", icon = icon("file-csv"),
+                           class = "btn-sm btn-outline-secondary dl-btn"),
+            downloadButton("dl_waning", label = NULL, icon = icon("download"),
+                           class = "btn-sm btn-outline-secondary dl-btn")
+          )
         ),
         plotOutput("plot_waning", height = "480px")
       )
@@ -314,7 +319,12 @@ ui <- page_sidebar(
       value = "tab_diag",
       title = span(icon("stethoscope"), " Diagnostics"),
       card(
-        card_header("MCMC convergence diagnostics"),
+        card_header(
+          class = "d-flex justify-content-between align-items-center",
+          "MCMC convergence diagnostics",
+          downloadButton("dl_posteriors_csv", "Posteriors CSV", icon = icon("file-csv"),
+                         class = "btn-sm btn-outline-secondary dl-btn ms-auto")
+        ),
         card_body(DTOutput("tbl_diag"))
       )
     ),
@@ -918,6 +928,48 @@ server <- function(input, output, session) {
     content  = function(file) {
       ggplot2::ggsave(file, plot = incidence_plot(),
                       width = 12, height = 5, dpi = 300, bg = "white")
+    }
+  )
+
+  output$dl_curves_csv <- downloadHandler(
+    filename = function() "waning_curves.csv",
+    content  = function(file) {
+      res <- fit_result()
+      req(res)
+      rows <- lapply(res$models, function(m) {
+        w <- rstan::extract(res$fits[[m]], pars = "waning")$waning  # [draws x 730]
+        t_seq <- 0:729
+        data.frame(
+          model  = toupper(m),
+          t_days = t_seq,
+          median = apply(w, 2, stats::median),
+          lb_95  = apply(w, 2, stats::quantile, 0.025),
+          ub_95  = apply(w, 2, stats::quantile, 0.975),
+          lb_50  = apply(w, 2, stats::quantile, 0.25),
+          ub_50  = apply(w, 2, stats::quantile, 0.75)
+        )
+      })
+      utils::write.csv(do.call(rbind, rows), file, row.names = FALSE)
+    }
+  )
+
+  output$dl_posteriors_csv <- downloadHandler(
+    filename = function() "posterior_samples.csv",
+    content  = function(file) {
+      res <- fit_result()
+      req(res)
+      rows <- lapply(res$models, function(m) {
+        p <- rstan::extract(res$fits[[m]], pars = c("wane_a", "wane_b", "alpha", "rho"))
+        data.frame(
+          model  = toupper(m),
+          draw   = seq_len(length(p$wane_a)),
+          wane_a = p$wane_a,
+          wane_b = p$wane_b,
+          alpha  = p$alpha,
+          rho    = p$rho
+        )
+      })
+      utils::write.csv(do.call(rbind, rows), file, row.names = FALSE)
     }
   )
 
