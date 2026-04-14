@@ -7,7 +7,10 @@ on:
 
 jobs:
   deploy:
-    runs-on: ubuntu-latest
+    # shinyapps.io runs Ubuntu 22.04 (glibc 2.35). Compiling Stan on a newer
+    # Ubuntu produces a .so that requires GLIBC_2.38+ which shinyapps.io lacks.
+    # Pin to ubuntu-22.04 so the compiled binary is ABI-compatible.
+    runs-on: ubuntu-22.04
 
     steps:
       - uses: actions/checkout@v4
