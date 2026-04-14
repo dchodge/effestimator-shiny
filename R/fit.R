@@ -91,24 +91,35 @@ fit_efficacy <- function(
   if (!dir.exists(output_dir)) dir.create(output_dir, recursive = TRUE)
 
   # ── Stan model ──────────────────────────────────────────────────────────────
-  # Suppress rstan output; auto-write compiled binary to avoid recompiling
+  # auto_write = TRUE caches the compiled model as a .rds file in the SAME
+  # directory as the Stan source. On shinyapps.io the app directory is
+  # read-only, so that write fails with "invalid connection". Fix: copy the
+  # Stan file into tempdir() (always writable) before compiling so the cache
+  # ends up there instead.
   rstan::rstan_options(auto_write = TRUE)
   options(mc.cores = 1L)
 
   stan_dir <- file.path(getwd(), "stan")
   if (!dir.exists(stan_dir)) stan_dir <- file.path(normalizePath("."), "stan")
 
-  stan_file <- if (bounded) {
+  stan_src <- if (bounded) {
     file.path(stan_dir, "eff_est.stan")
   } else {
     file.path(stan_dir, "eff_est_none.stan")
   }
 
-  if (!file.exists(stan_file)) {
-    stop(sprintf("Stan model not found: %s", stan_file), call. = FALSE)
+  if (!file.exists(stan_src)) {
+    stop(sprintf("Stan model not found: %s", stan_src), call. = FALSE)
   }
 
-  # Compile once; rstan caches the compiled model for the session
+  # Copy to tempdir so rstan's .rds cache lands in a writable location.
+  # Re-use the temp copy across calls within the same session.
+  stan_file <- file.path(tempdir(), basename(stan_src))
+  if (!file.exists(stan_file)) {
+    file.copy(stan_src, stan_file, overwrite = FALSE)
+  }
+
+  # Compile once; rstan finds the cached .rds on subsequent calls.
   mod <- rstan::stan_model(file = stan_file)
 
   pla <- data$placebo
