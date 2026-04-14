@@ -740,23 +740,40 @@ server <- function(input, output, session) {
           max(1L, parallel::detectCores(logical = FALSE))
         )
 
+        # withCallingHandlers logs the FULL call stack to R console
+        # (visible in shinyapps.io Application Logs) before tryCatch unwinds it.
         tryCatch(
-          fit_efficacy(
-            data            = dat,
-            models          = models_sel,
-            bounded         = isTRUE(input$bounded),
-            upper_bound_b   = ub,
-            chains          = as.integer(input$chains),
-            parallel_chains = n_cores,
-            iter_warmup     = as.integer(input$iter_w),
-            iter_sampling   = as.integer(input$iter_s),
-            seed            = as.integer(input$seed),
-            refresh         = 0
+          withCallingHandlers(
+            fit_efficacy(
+              data            = dat,
+              models          = models_sel,
+              bounded         = isTRUE(input$bounded),
+              upper_bound_b   = ub,
+              chains          = as.integer(input$chains),
+              parallel_chains = n_cores,
+              iter_warmup     = as.integer(input$iter_w),
+              iter_sampling   = as.integer(input$iter_s),
+              seed            = as.integer(input$seed),
+              refresh         = 0
+            ),
+            error = function(cond) {
+              # Log full traceback to shinyapps.io Application Logs
+              message("=== FIT ERROR ===")
+              message("Message : ", conditionMessage(cond))
+              message("Call    : ", paste(deparse(conditionCall(cond)), collapse = " "))
+              message("Sink #  : ", sink.number())
+              calls <- sys.calls()
+              message("Stack depth: ", length(calls))
+              for (i in seq_along(calls)) {
+                message(sprintf("  [%02d] %s", i, deparse(calls[[i]])[1]))
+              }
+              message("=== END ===")
+            }
           ),
           error = function(e) {
             showNotification(
               paste("Fitting failed:", conditionMessage(e)),
-              type = "error", duration = 12
+              type = "error", duration = 20
             )
             NULL
           }

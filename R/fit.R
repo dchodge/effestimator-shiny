@@ -91,12 +91,14 @@ fit_efficacy <- function(
   if (!dir.exists(output_dir)) dir.create(output_dir, recursive = TRUE)
 
   # ── Stan model ──────────────────────────────────────────────────────────────
-  # auto_write = TRUE caches the compiled model as a .rds file in the SAME
-  # directory as the Stan source. On shinyapps.io the app directory is
-  # read-only, so that write fails with "invalid connection". Fix: copy the
-  # Stan file into tempdir() (always writable) before compiling so the cache
-  # ends up there instead.
-  rstan::rstan_options(auto_write = TRUE)
+  # On shinyapps.io:
+  #   - auto_write=TRUE tries to write an .rds cache next to the Stan file;
+  #     the app dir is read-only → "invalid connection".
+  #   - Even with tempdir() copies, the auto_write path lookup can still hit
+  #     the read-only dir.
+  # Fix: disable auto_write AND load the Stan code as a *string* (model_code)
+  # so rstan never touches any source-adjacent file paths at all.
+  rstan::rstan_options(auto_write = FALSE)
   options(mc.cores = 1L)
 
   stan_dir <- file.path(getwd(), "stan")
@@ -112,15 +114,17 @@ fit_efficacy <- function(
     stop(sprintf("Stan model not found: %s", stan_src), call. = FALSE)
   }
 
-  # Copy to tempdir so rstan's .rds cache lands in a writable location.
-  # Re-use the temp copy across calls within the same session.
-  stan_file <- file.path(tempdir(), basename(stan_src))
-  if (!file.exists(stan_file)) {
-    file.copy(stan_src, stan_file, overwrite = FALSE)
-  }
+  # Read the Stan source into a string. Using model_code= instead of file=
+  # means rstan never tries to write a cache file anywhere — no file
+  # connections opened during compilation.
+  stan_code <- paste(readLines(stan_src, warn = FALSE), collapse = "\n")
 
-  # Compile once; rstan finds the cached .rds on subsequent calls.
-  mod <- rstan::stan_model(file = stan_file)
+  message("Compiling Stan model from string...")
+  mod <- suppressWarnings(
+    rstan::stan_model(model_code = stan_code, verbose = FALSE,
+                      auto_write = FALSE)
+  )
+  message("Compilation complete.")
 
   pla <- data$placebo
   vac <- data$vaccine
@@ -169,8 +173,9 @@ fit_efficacy <- function(
     }
 
     # Wrap sampling in capture.output + suppressMessages so rstan's C++ code
-    # gets a fresh, valid text connection for stdout even when Shiny has
-    # already redirected R's output stream (stale connection index = the error).
+    # gets a fresh, valid text connection for stdout. show_messages=FALSE
+    # prevents Stan adaptation messages from trying to write through R's
+    # (Shiny-redirected) output connections.
     fit <- local({
       f <- NULL
       capture.output(
@@ -185,7 +190,8 @@ fit_efficacy <- function(
             iter          = iter_warmup + iter_sampling,
             refresh       = 0L,
             open_progress = FALSE,
-            verbose       = FALSE
+            verbose       = FALSE,
+            show_messages = FALSE
           )
         ),
         type = "output"
