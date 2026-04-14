@@ -1,28 +1,15 @@
 # R/helpers.R
 # Auto-sourced by Shiny at startup.
 
-# ── Dependency check ───────────────────────────────────────────────────────────
+# ── Dependency check (non-fatal — warn only so the app still loads) ──────────
 .check_deps <- function() {
-  if (!requireNamespace("cmdstanr", quietly = TRUE)) {
-    stop(
-      "cmdstanr is not installed.\n",
-      "Install with: install.packages('cmdstanr', repos = 'https://mc-stan.org/r-packages/')",
+  if (!requireNamespace("rstan", quietly = TRUE)) {
+    warning(
+      "rstan is not installed. Stan model fitting will not work.\n",
+      "Install with: install.packages('rstan')",
       call. = FALSE
     )
   }
-
-  # Check CmdStan is configured
-  tryCatch(
-    cmdstanr::cmdstan_version(error_on_NA = TRUE),
-    error = function(e) {
-      stop(
-        "CmdStan is not installed or not found.\n",
-        "Run: cmdstanr::install_cmdstan()",
-        call. = FALSE
-      )
-    }
-  )
-
   invisible(TRUE)
 }
 
