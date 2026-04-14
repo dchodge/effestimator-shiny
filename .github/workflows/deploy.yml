@@ -47,6 +47,25 @@ jobs:
           ))
         shell: Rscript {0}
 
+      - name: Pre-compile Stan models
+        run: |
+          # Compile both Stan models on the CI runner (Ubuntu, same OS as
+          # shinyapps.io). save_dso=TRUE embeds the compiled .so into the .rds
+          # so no compilation happens at runtime --- shinyapps.io free tier
+          # runs OOM during g++ compilation of Stan code.
+          rstan::rstan_options(auto_write = FALSE)
+          options(mc.cores = 1L)
+          for (f in c("stan/eff_est.stan", "stan/eff_est_none.stan")) {
+            message("Compiling: ", f)
+            code <- paste(readLines(f, warn = FALSE), collapse = "\n")
+            mod  <- rstan::stan_model(model_code = code, save_dso = TRUE,
+                                      verbose = FALSE, auto_write = FALSE)
+            out  <- sub("\\.stan$", "_compiled.rds", f)
+            saveRDS(mod, file = out)
+            message("Saved: ", out)
+          }
+        shell: Rscript {0}
+
       - name: Deploy to shinyapps.io
         env:
           SHINYAPPS_ACCOUNT: ${{ secrets.SHINYAPPS_ACCOUNT }}

@@ -4,13 +4,15 @@
 .Rproj.user/
 *.Rproj
 
-# Stan compiled binaries (OS-specific, do not commit)
+# Stan compiled binaries (OS-specific, do not commit source-level artefacts)
 stan/eff_est
 stan/eff_est_none
-stan/*.rds
 stan/*.so
 stan/*.dylib
 stan/*.dll
+# Ignore auto_write cache files but KEEP CI-built _compiled.rds bundles
+stan/*.rds
+!stan/*_compiled.rds
 
 # Fit outputs (large, generated at runtime)
 outputs/

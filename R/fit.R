@@ -91,40 +91,35 @@ fit_efficacy <- function(
   if (!dir.exists(output_dir)) dir.create(output_dir, recursive = TRUE)
 
   # ── Stan model ──────────────────────────────────────────────────────────────
-  # On shinyapps.io:
-  #   - auto_write=TRUE tries to write an .rds cache next to the Stan file;
-  #     the app dir is read-only → "invalid connection".
-  #   - Even with tempdir() copies, the auto_write path lookup can still hit
-  #     the read-only dir.
-  # Fix: disable auto_write AND load the Stan code as a *string* (model_code)
-  # so rstan never touches any source-adjacent file paths at all.
+  # Strategy: use a pre-compiled .rds (built in CI on the same OS/arch as
+  # shinyapps.io) to avoid runtime C++ compilation, which exceeds the free-tier
+  # memory limit (~256 MB) and OOM-kills the container.
   rstan::rstan_options(auto_write = FALSE)
   options(mc.cores = 1L)
 
   stan_dir <- file.path(getwd(), "stan")
   if (!dir.exists(stan_dir)) stan_dir <- file.path(normalizePath("."), "stan")
 
-  stan_src <- if (bounded) {
-    file.path(stan_dir, "eff_est.stan")
+  model_name <- if (bounded) "eff_est" else "eff_est_none"
+
+  compiled_rds <- file.path(stan_dir, paste0(model_name, "_compiled.rds"))
+  stan_src     <- file.path(stan_dir, paste0(model_name, ".stan"))
+
+  if (file.exists(compiled_rds)) {
+    message("Loading pre-compiled Stan model from: ", compiled_rds)
+    mod <- readRDS(compiled_rds)
   } else {
-    file.path(stan_dir, "eff_est_none.stan")
+    # Fallback: compile from source (local dev only; will OOM on free shinyapps)
+    if (!file.exists(stan_src)) {
+      stop(sprintf("Stan model not found: %s", stan_src), call. = FALSE)
+    }
+    message("Pre-compiled model not found; compiling from source (dev only)...")
+    stan_code <- paste(readLines(stan_src, warn = FALSE), collapse = "\n")
+    mod <- suppressWarnings(
+      rstan::stan_model(model_code = stan_code, save_dso = TRUE,
+                        verbose = FALSE, auto_write = FALSE)
+    )
   }
-
-  if (!file.exists(stan_src)) {
-    stop(sprintf("Stan model not found: %s", stan_src), call. = FALSE)
-  }
-
-  # Read the Stan source into a string. Using model_code= instead of file=
-  # means rstan never tries to write a cache file anywhere — no file
-  # connections opened during compilation.
-  stan_code <- paste(readLines(stan_src, warn = FALSE), collapse = "\n")
-
-  message("Compiling Stan model from string...")
-  mod <- suppressWarnings(
-    rstan::stan_model(model_code = stan_code, verbose = FALSE,
-                      auto_write = FALSE)
-  )
-  message("Compilation complete.")
 
   pla <- data$placebo
   vac <- data$vaccine
