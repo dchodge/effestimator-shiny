@@ -33,8 +33,11 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ${{ env.R_LIBS_USER }}
-          key: ${{ runner.os }}-r-release-${{ hashFiles('DESCRIPTION') }}
-          restore-keys: ${{ runner.os }}-r-release-
+          # Include runner image in key so a change of OS (ubuntu-latest →
+          # ubuntu-22.04) forces a clean install and avoids loading binaries
+          # compiled against a newer glibc than the runtime provides.
+          key: ${{ runner.os }}-${{ runner.arch }}-ubuntu22-r-release-${{ hashFiles('DESCRIPTION') }}
+          restore-keys: ${{ runner.os }}-${{ runner.arch }}-ubuntu22-r-release-
 
       - name: Install R packages
         run: |
