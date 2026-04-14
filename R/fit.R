@@ -168,21 +168,30 @@ fit_efficacy <- function(
       stan_data$lower_bound <- upper_bound_b[[m]]
     }
 
-    fit <- rstan::sampling(
-      mod,
-      data          = stan_data,
-      seed          = seed,
-      chains        = chains,
-      cores         = n_cores,
-      warmup        = iter_warmup,
-      iter          = iter_warmup + iter_sampling,
-      refresh       = refresh,
-      open_progress = FALSE   # suppress rstan's progress connection on servers
-    )
-
-    save_path <- file.path(output_dir, sprintf("fits_%s.rds", m))
-    saveRDS(fit, file = save_path)
-    message(sprintf("  Saved to: %s", save_path))
+    # Wrap sampling in capture.output + suppressMessages so rstan's C++ code
+    # gets a fresh, valid text connection for stdout even when Shiny has
+    # already redirected R's output stream (stale connection index = the error).
+    fit <- local({
+      f <- NULL
+      capture.output(
+        f <- suppressMessages(
+          rstan::sampling(
+            mod,
+            data          = stan_data,
+            seed          = seed,
+            chains        = chains,
+            cores         = n_cores,
+            warmup        = iter_warmup,
+            iter          = iter_warmup + iter_sampling,
+            refresh       = 0L,
+            open_progress = FALSE,
+            verbose       = FALSE
+          )
+        ),
+        type = "output"
+      )
+      f
+    })
 
     fits[[m]] <- fit
   }
