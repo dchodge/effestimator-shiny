@@ -503,4 +503,53 @@ table.dataTable.stripe tbody tr.odd {
 }
 
 .mt-3 { margin-top: 1rem; }
+
+/* ── About tab: data format section ─────────────────────────────────────── */
+.about-section-h {
+  font-size: 0.82rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: #9E9B93;
+  margin-bottom: 0.4rem;
+}
+
+.about-method-block {
+  background-color: #FDFAF7;
+  border: 1px solid #E9E4D9;
+  border-radius: 6px;
+  padding: 10px 14px;
+  margin-bottom: 10px;
+  font-size: 0.87rem;
+  color: #33302E;
+}
+
+.about-method-block p.about-intro {
+  margin-bottom: 0;
+}
+
+/* ── About tab: fitting pipeline schematic ───────────────────────────────── */
+.pipe-step-card {
+  background: #FDFAF7;
+  border: 1px solid #E9E4D9;
+  border-radius: 6px;
+  overflow: hidden;
+  height: 100%;
+}
+
+.pipe-step-header {
+  background: linear-gradient(to right, #F2EDE8, #EDE8E2);
+  padding: 7px 12px;
+  font-size: 0.80rem;
+  font-weight: 700;
+  color: #33302E;
+  letter-spacing: 0.02em;
+  border-bottom: 1px solid #E9E4D9;
+}
+
+.pipe-step-num {
+  color: #0D7680;
+  font-size: 0.95rem;
+}
+
 ::-webkit-scrollbar-thumb:hover { background: #9E9B93; }

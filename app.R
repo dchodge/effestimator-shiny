@@ -404,6 +404,165 @@ ui <- page_sidebar(
           )
         ),
 
+        card(          card_header("Fitting pipeline — how it works"),
+          card_body(
+            tags$p(class = "about-intro",
+              "Three-stage estimation illustrated using the Pfizer MATISSE maternal RSV ",
+              "vaccine trial (Kampmann et al. 2023). Step 3 waning curves use illustrative ",
+              "parameters to demonstrate model shapes; actual posterior curves are produced ",
+              "by the Stan sampler after clicking \u2018Fit Models\u2019."
+            ),
+            tags$div(
+              class = "row g-2 mt-1",
+              tags$div(
+                class = "col-md-4",
+                tags$div(
+                  class = "pipe-step-card",
+                  tags$div(class = "pipe-step-header",
+                    tags$span(class = "pipe-step-num", "\u2460"),
+                    " Observed interval data"
+                  ),
+                  plotOutput("pipe_p1", height = "270px")
+                )
+              ),
+              tags$div(
+                class = "col-md-4",
+                tags$div(
+                  class = "pipe-step-card",
+                  tags$div(class = "pipe-step-header",
+                    tags$span(class = "pipe-step-num", "\u2461"),
+                    " Background hazard \u03bb(t)"
+                  ),
+                  plotOutput("pipe_p2", height = "270px")
+                )
+              ),
+              tags$div(
+                class = "col-md-4",
+                tags$div(
+                  class = "pipe-step-card",
+                  tags$div(class = "pipe-step-header",
+                    tags$span(class = "pipe-step-num", "\u2462"),
+                    " Fitted waning efficacy"
+                  ),
+                  plotOutput("pipe_p3", height = "270px")
+                )
+              )
+            )
+          )
+        ),
+
+        card(          card_header("Data format & preparation"),
+          card_body(
+
+            # ── Required format ───────────────────────────────────────────────
+            tags$h6("Required CSV format", class = "about-section-h"),
+            tags$p(class = "about-intro",
+              "Each arm (vaccine and placebo/control) must be supplied as a separate CSV ",
+              "with one row per time interval. Four columns are required:"
+            ),
+            tags$table(
+              class = "ref-table mb-2",
+              tags$thead(tags$tr(
+                tags$th("Column"), tags$th("Type"), tags$th("Description")
+              )),
+              tags$tbody(
+                tags$tr(
+                  tags$td(tags$code("tp")),
+                  tags$td("integer"),
+                  tags$td("Time-point index (1, 2, 3, \u2026) used by the GP covariance kernel.")
+                ),
+                tags$tr(
+                  tags$td(tags$code("t")),
+                  tags$td("numeric"),
+                  tags$td("Midpoint of the interval, in days post-vaccination / post-birth.")
+                ),
+                tags$tr(
+                  tags$td(tags$code("person_time")),
+                  tags$td("numeric"),
+                  tags$td("Total person-days of follow-up accumulated within this interval.")
+                ),
+                tags$tr(
+                  tags$td(tags$code("n")),
+                  tags$td("integer"),
+                  tags$td("Number of endpoint events (e.g. RSV-LRTI cases) observed in this interval.")
+                )
+              )
+            ),
+
+            # ── Person-time ───────────────────────────────────────────────────
+            tags$h6("Calculating person-time from at-risk counts", class = "about-section-h mt-3"),
+            tags$p(class = "about-intro",
+              "Trial papers typically report the number at risk at a series of timepoints ",
+              tags$em("t"),
+              "\u2080, ",
+              tags$em("t"),
+              "\u2081, \u2026 alongside a Kaplan\u2013Meier curve. ",
+              "Person-time for interval [",
+              tags$em("t"),
+              "\u1d62, ",
+              tags$em("t"),
+              "\u1d62\u208a\u2081] is approximated by the ",
+              tags$strong("trapezoid rule"),
+              ":"
+            ),
+            tags$div(
+              class = "model-how",
+              HTML("<code>person_time<sub>i</sub> = (N<sub>i</sub> + N<sub>i+1</sub>) / 2 &times; (t<sub>i+1</sub> &minus; t<sub>i</sub>)</code>")
+            ),
+            tags$p(class = "about-intro mt-2",
+              "where N\u1d62 is the number at risk at ",
+              tags$em("t"),
+              "\u1d62. This estimates the area under the at-risk curve over the interval. ",
+              "For the most accurate estimate, use the at-risk counts recorded at each reported ",
+              "timepoint rather than interpolating them."
+            ),
+
+            # ── How preloaded data were prepared ──────────────────────────────
+            tags$h6("How the built-in datasets were prepared", class = "about-section-h mt-3"),
+            tags$p(class = "about-intro",
+              "Two approaches were used, depending on the level of data available in the ",
+              "published paper:"
+            ),
+            tags$div(
+              class = "about-method-block",
+              tags$strong("Most datasets (Maternal, OA-GSK, OA-Pfizer, OA-Moderna, Papirovax)"),
+              tags$p(class = "about-intro mt-1",
+                "At-risk counts (N\u1d62) and cumulative event counts were read from the ",
+                "published tables or digitised from the KM figure. ",
+                "Person-time per interval was then computed with the trapezoid rule above. ",
+                "Incident events per interval equal the difference between successive ",
+                "cumulative counts."
+              )
+            ),
+            tags$div(
+              class = "about-method-block",
+              tags$strong("Nirsevimab (MELODY\u2009/\u2009MEDLEY \u2014 event-level reconstruction)"),
+              tags$p(class = "about-intro mt-1",
+                "Individual-level event times were digitised from the published KM curves using ",
+                "the Guyot algorithm, giving a sequence of events (type I\u2009=\u2009infection, ",
+                "C\u2009=\u2009censoring) with exact day. A standard KM estimator was then run on these ",
+                "events to recover the at-risk count at each event day, from which person-time ",
+                "was accumulated. The resulting daily series was aggregated to 1-day intervals ",
+                "before fitting. This approach is used when no at-risk table is published but a ",
+                "KM figure is available."
+              )
+            ),
+            tags$p(class = "about-intro mt-2",
+              "Example R code reproducing the trapezoid calculation for a uniformly spaced ",
+              "monthly follow-up:"
+            ),
+            tags$div(
+              class = "model-how",
+              HTML(paste0(
+                "<code>dt &lt;- 30  # days per interval<br>",
+                "ts &lt;- seq(15, 165, dt)  # interval midpoints<br>",
+                "person_time &lt;- (at_risk[-l] + at_risk[-1]) * dt / 2<br>",
+                "n &lt;- diff(cumulative_events)</code>"
+              ))
+            )
+          )
+        ),
+
         card(
           card_header("References"),
           card_body(
@@ -728,6 +887,110 @@ server <- function(input, output, session) {
                                         c("#FFEBEE", "#FFF8E1", "#E8F5E9"))
       )
   })
+  # ── Pipeline schematic plots (About tab) ────────────────────────────────────────────
+  .pipe_data <- local({
+    dat <- rsv_example("maternal")
+    vac <- dat$vaccine
+    pla <- dat$placebo
+    vac$rate <- 1000 * vac$n / vac$person_time
+    pla$rate <- 1000 * pla$n / pla$person_time
+    lrr    <- log(vac$rate / pla$rate)
+    se_lrr <- sqrt(1 / pmax(vac$n, 0.5) + 1 / pmax(pla$n, 0.5))
+    list(
+      vac   = vac, pla = pla,
+      ve    = 1 - exp(lrr),
+      ve_lo = 1 - exp(lrr + 1.96 * se_lrr),
+      ve_hi = 1 - exp(lrr - 1.96 * se_lrr)
+    )
+  })
+
+  output$pipe_p1 <- renderPlot({
+    pd <- .pipe_data
+    df <- rbind(
+      data.frame(t = pd$vac$t, rate = pd$vac$rate, arm = "Vaccine"),
+      data.frame(t = pd$pla$t, rate = pd$pla$rate, arm = "Placebo")
+    )
+    ggplot(df, aes(x = t, y = rate, colour = arm)) +
+      geom_point(size = 3.0) +
+      geom_line(linewidth = 1.0, alpha = 0.75) +
+      scale_colour_manual(
+        values = c("Vaccine" = "#0D7680", "Placebo" = "#990F3D"), name = NULL
+      ) +
+      labs(
+        title    = "Observed interval event rates",
+        subtitle = "MATISSE trial \u2014 Kampmann et al. 2023",
+        x        = "Days post-vaccination",
+        y        = "Events / 1,000 person-days"
+      ) +
+      theme_ft()
+  }, bg = "#FFFFFF", res = 96)
+
+  output$pipe_p2 <- renderPlot({
+    pd    <- .pipe_data
+    pla   <- pd$pla
+    t_seq <- seq(pla$t[1] - 10, tail(pla$t, 1) + 10, by = 1)
+    sp    <- smooth.spline(pla$t, pla$rate, df = 3)
+    fit   <- pmax(predict(sp, t_seq)$y, 0)
+    df_pts <- data.frame(t = pla$t, rate = pla$rate)
+    df_fit <- data.frame(t = t_seq, lo = fit * 0.65, hi = fit * 1.35, mid = fit)
+    ggplot() +
+      geom_ribbon(data = df_fit,
+        aes(x = t, ymin = lo, ymax = hi), fill = "#990F3D", alpha = 0.18) +
+      geom_line(data = df_fit,
+        aes(x = t, y = mid), colour = "#990F3D", linewidth = 1.2) +
+      geom_point(data = df_pts,
+        aes(x = t, y = rate), colour = "#990F3D", size = 3.5) +
+      labs(
+        title    = "Background hazard \u03bb(t)",
+        subtitle = "Spline on placebo-arm rates (Bayesian GP in full model)",
+        x        = "Days post-vaccination",
+        y        = "\u03bb(t) \u2014 events / 1,000 person-days"
+      ) +
+      theme_ft()
+  }, bg = "#FFFFFF", res = 96)
+
+  output$pipe_p3 <- renderPlot({
+    pd    <- .pipe_data
+    t_seq <- seq(0, tail(pd$vac$t, 1) + 15, by = 1)
+    a <- 0.57; beta <- 0.006
+    wane <- data.frame(
+      t     = rep(t_seq, 3),
+      eff   = c(
+        a * exp(-beta * t_seq),
+        a * pgamma(t_seq, 2, 2 * beta, lower.tail = FALSE),
+        a * pgamma(t_seq, 3, 3 * beta, lower.tail = FALSE)
+      ),
+      model = rep(c("Exponential", "Erlang-2", "Erlang-3"), each = length(t_seq))
+    )
+    obs <- data.frame(
+      t     = pd$vac$t,
+      ve    = pd$ve,
+      ve_lo = pmax(pd$ve_lo, 0),
+      ve_hi = pmin(pd$ve_hi, 1)
+    )
+    ggplot() +
+      geom_hline(yintercept = 0, colour = "#E9E4D9", linewidth = 0.5) +
+      geom_errorbar(data = obs,
+        aes(x = t, ymin = ve_lo, ymax = ve_hi),
+        width = 4, colour = "#9E9B93", linewidth = 0.8) +
+      geom_point(data = obs, aes(x = t, y = ve), colour = "#33302E", size = 3.5) +
+      geom_line(data = wane, aes(x = t, y = eff, colour = model), linewidth = 1.2) +
+      scale_colour_manual(
+        values = c("Exponential" = "#0D7680", "Erlang-2" = "#990F3D", "Erlang-3" = "#593380"),
+        name = NULL
+      ) +
+      scale_y_continuous(
+        limits = c(-0.05, 1),
+        labels = function(x) paste0(round(x * 100), "%")
+      ) +
+      labs(
+        title    = "Fitted waning efficacy",
+        subtitle = "Points: period VE \u00b1 95% CI; curves: illustrative model shapes",
+        x        = "Days post-vaccination",
+        y        = "Efficacy eff(t)"
+      ) +
+      theme_ft()
+  }, bg = "#FFFFFF", res = 96)
 }
 
 # ── Launch ──────────────────────────────────────────────────────────────────────
