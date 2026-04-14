@@ -124,19 +124,7 @@ empty_plot <- function(msg = "Click \u2018Fit Models\u2019 to run the analysis")
 
 # ── UI ─────────────────────────────────────────────────────────────────────────
 ui <- page_sidebar(
-  title = tags$span(
-    class = "brand-wrap",
-    tags$span("Efficacy Estimator", class = "brand-main"),
-    tags$span(
-      class = "brand-links",
-      tags$a("R package", href = "https://github.com/dchodge/effestimator",
-             target = "_blank", rel = "noopener"),
-      " \u00b7 ",
-      tags$a("Hodgson et al. Lancet",
-             href = "https://www.thelancet.com/journals/lanepe/article/PIIS2666-7762(23)00248-X/fulltext",
-             target = "_blank", rel = "noopener")
-    )
-  ),
+  title = "Efficacy Estimator",
   theme    = ft_theme,
   fillable = TRUE,
   useShinyjs(),
@@ -146,6 +134,16 @@ ui <- page_sidebar(
       rel  = "stylesheet",
       href = "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
     )
+  ),
+  # Navbar links injected via CSS-positioned absolute div
+  tags$div(
+    class = "brand-links-bar",
+    tags$a("R package", href = "https://github.com/dchodge/effestimator",
+           target = "_blank", rel = "noopener"),
+    " · ",
+    tags$a("Hodgson et al. Lancet",
+           href = "https://www.thelancet.com/journals/lanepe/article/PIIS2666-7762(23)00248-X/fulltext",
+           target = "_blank", rel = "noopener")
   ),
 
   # ── Sidebar ─────────────────────────────────────────────────────────────────
@@ -227,9 +225,9 @@ ui <- page_sidebar(
           numericInput("upper_bound_b", "Upper bound for wane_b",
                        value = 0.05, min = 0.001, max = 1, step = 0.01)
         ),
-        numericInput("chains",  "Chains",          value = 4,    min = 1, max = 8),
-        numericInput("iter_w",  "Warmup / chain",  value = 1000, min = 100, step = 100),
-        numericInput("iter_s",  "Samples / chain", value = 1000, min = 100, step = 100),
+        numericInput("chains",  "Chains",          value = 2,    min = 1, max = 8),
+        numericInput("iter_w",  "Warmup / chain",  value = 500,  min = 100, step = 100),
+        numericInput("iter_s",  "Samples / chain", value = 500,  min = 100, step = 100),
         numericInput("seed",    "Random seed",     value = 123,  min = 1)
       )
     ),

@@ -134,6 +134,10 @@ fit_efficacy <- function(
   upper_bound_b <- rep_len(upper_bound_b, length(models))
   names(upper_bound_b) <- models
 
+  # shinyapps.io (and most Shiny servers) block forked parallel processes.
+  # Force single-core regardless of user setting.
+  n_cores <- 1L
+
   # ── Fit each model ──────────────────────────────────────────────────────────
   fits <- list()
 
@@ -150,7 +154,7 @@ fit_efficacy <- function(
       data    = stan_data,
       seed    = seed,
       chains  = chains,
-      cores   = parallel_chains,
+      cores   = n_cores,
       warmup  = iter_warmup,
       iter    = iter_warmup + iter_sampling,
       refresh = refresh
